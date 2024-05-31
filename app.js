@@ -7,17 +7,27 @@ const { Client } = pg
 
 const splitURL = process.env.DATABASE_URL.split(":")
 
-const client = new Client(
-  {
-    user: process.env.DATABASE_USERNAME,
-    host: splitURL[0],
-    port: splitURL[1],
-    database: process.env.DATABASE_NAME,
-    password: process.env.DATABASE_PASSWORD,
-    ssl: true,
+var client = null
 
-  }
-)
+if (process.env.CONNECTION_STRING) {
+  client = new Client({
+    connectionString: process.env.CONNECTION_STRING,
+    ssl: true,
+  });
+} else {
+  client = new Client(
+    {
+      user: process.env.DATABASE_USERNAME,
+      host: splitURL[0],
+      port: splitURL[1],
+      database: process.env.DATABASE_NAME,
+      password: process.env.DATABASE_PASSWORD,
+      ssl: true,
+    }
+  )
+}
+
+
 await client.connect()
  
 await client.query('CREATE TABLE IF NOT EXISTS public.mytable (i integer);')
