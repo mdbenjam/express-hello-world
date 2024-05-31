@@ -1,16 +1,31 @@
-const express = require("express");
+import express from 'express';
+import pg from 'pg';
+
 const app = express();
 const port = process.env.PORT || 3001;
-const pg = require('pg');
 const { Client } = pg
-const client = new Client()
+
+const splitURL = process.env.DATABASE_URL.split(":")
+
+const client = new Client(
+  {
+    user: process.env.DATABASE_USERNAME,
+    host: splitURL[0],
+    port: splitURL[1],
+    database: process.env.DATABASE_NAME,
+    password: process.env.DATABASE_PASSWORD,
+    ssl: true,
+
+  }
+)
 await client.connect()
  
-await client.query('CREATE TABLE IF NOT EXISTS postgres.mytable (i integer);')
+await client.query('CREATE TABLE IF NOT EXISTS public.mytable (i integer);')
 
 app.get("/", async (req, res) => {
-  dbResult = await client.query('UPDATE postgres.mytable SET i = i + 1;')
-  dbResult = await client.query('SELECT * FROM postgres.mytable;')
+  await client.query('INSERT INTO public.mytable (i) VALUES (1);')
+  const dbResult = await client.query('SELECT COUNT(*) FROM public.mytable;')
+
   return res.type('html').send(`
   <!DOCTYPE html>
   <html>
@@ -57,9 +72,9 @@ app.get("/", async (req, res) => {
     <body>
       <section>
         Hello from Render!
-      </section>
-      <section>
-        Counter: ${dbResult.rows[0].i}
+        <p>
+          Counter: ${dbResult.rows[0].count}
+        </p>
       </section>
     </body>
   </html>
