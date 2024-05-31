@@ -5,8 +5,6 @@ const app = express();
 const port = process.env.PORT || 3001;
 const { Client } = pg
 
-const splitURL = process.env.DATABASE_URL.split(":")
-
 var client = null
 
 if (process.env.CONNECTION_STRING) {
@@ -15,6 +13,8 @@ if (process.env.CONNECTION_STRING) {
     ssl: true,
   });
 } else {
+  const splitURL = process.env.DATABASE_URL.split(":")
+
   client = new Client(
     {
       user: process.env.DATABASE_USERNAME,
